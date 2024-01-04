@@ -64,10 +64,23 @@ def draw(pieces, color_index=[], title=""):
             colors.append(clr[index])
     plt.interactive(True)
     fig = plt.figure()
+    # xticks = np.arange(0, 600, 50)
+    # yticks = np.arange(0, 250, 20)
+    # zticks = np.arange(0, 250, 20)
     ax = fig.add_subplot(projection='3d')
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+    # ax.set_xlim(0, 600)
+    # ax.set_ylim(0, 250)
+    # ax.set_zlim(0, 250)
+    # ax.set_xticks(xticks)
+    # ax.set_yticks(yticks)
+    # ax.set_zticks(zticks)
     for p, s, c in zip(positions, sizes, colors):
         plotcuboid(pos=p, size=s, ax=ax, color=c)
     plt.title(title)
+
     plt.show()
 
     return color_index

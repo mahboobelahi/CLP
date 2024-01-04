@@ -20,8 +20,8 @@ def evaluate(population, truck_dimension, boxes, total_value):
         value = 0
         result = []
         for box_number, r in zip(individual['order'], individual['rotate']):
-            dblf = sorted(dblf, key=itemgetter(3)) #! sort by length/top
-            dblf = sorted(dblf, key=itemgetter(5)) #! sort by height/front
+            dblf = sorted(dblf, key=itemgetter(3)) #! sort by length/front
+            dblf = sorted(dblf, key=itemgetter(5)) #! sort by height/top
             dblf = sorted(dblf, key=itemgetter(4)) #! sort by width/beside
             for pos in dblf:
                 current = deepcopy(pos)

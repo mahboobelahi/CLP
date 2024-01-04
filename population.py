@@ -1,6 +1,6 @@
 import random
 from copy import deepcopy
-
+from pprint import pprint
 
 def generate_pop(box_params, count, rotation=5):
     """
@@ -20,6 +20,7 @@ def generate_pop(box_params, count, rotation=5):
     for i in range(0, x):
         #*sort by length,width,height,Vol,Value
         sorted_box = dict(sorted(box_params.items(), key=lambda xx: xx[1][i]))
+        print(sorted_box)
         #! add constraints like Stack,priority,zone, weight, load balancing etc to population
         population[i] = {"order": list(sorted_box.keys()),
                          "rotate": [random.randint(0, rotation - 1) for r in range(len(box_params))]}

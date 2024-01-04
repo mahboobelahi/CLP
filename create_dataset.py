@@ -7,15 +7,15 @@ import random
 import boxes as bx
 
 MIN_BOXES = 10
-MAX_BOXES = 36
+MAX_BOXES = 50
 MIN_VALUE = 50
 MAX_VALUE = 500
 MAX_TRUCK_LEN = 600
-MIN_TRUCK_LEN = 50
-MAX_TRUCK_WID = 600
-MIN_TRUCK_WID = 50
-MAX_TRUCK_HT = 600
-MIN_TRUCK_HT = 50
+MIN_TRUCK_LEN = 500#50
+MAX_TRUCK_WID = 250#600
+MIN_TRUCK_WID = 150
+MAX_TRUCK_HT = 250#600
+MIN_TRUCK_HT = 150
 
 truck_dim = [[random.randint(MIN_TRUCK_LEN, MAX_TRUCK_LEN), random.randint(MIN_TRUCK_WID, MAX_TRUCK_WID),
               random.randint(MIN_TRUCK_HT, MAX_TRUCK_HT)] for _ in range(5)]

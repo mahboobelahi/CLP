@@ -106,7 +106,7 @@ def draw_pareto(population):
 
 
 if __name__ == "__main__":
-    with open('input.json', 'r') as outfile:
+    with open('input1.json', 'r') as outfile:
         data = json.load(outfile)
     problem_indices = list(data.keys())
 
@@ -179,3 +179,4 @@ if __name__ == "__main__":
              ['Avg. Value%', sum(average_value) / len(average_value)]],
             headers=['Parameter', 'Value'], tablefmt="github"))
         input("Press Enter to continue...")
+        
