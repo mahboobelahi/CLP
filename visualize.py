@@ -64,6 +64,7 @@ def draw(pieces, color_index=[], title=""):
             colors.append(clr[index])
     plt.interactive(True)
     fig = plt.figure()
+    fig = fig = plt.figure(figsize=(20, 300))
     # xticks = np.arange(0, 600, 50)
     # yticks = np.arange(0, 250, 20)
     # zticks = np.arange(0, 250, 20)

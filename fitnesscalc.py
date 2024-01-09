@@ -1,5 +1,6 @@
 from operator import itemgetter
 from copy import deepcopy
+import pprint
 
 
 def evaluate(population, truck_dimension, boxes, total_value):
@@ -28,6 +29,7 @@ def evaluate(population, truck_dimension, boxes, total_value):
                 space_vol = pos[3] * pos[4] * pos[5]
                 box_vol = boxes[box_number][3]
                 box_value = boxes[box_number][4]
+                pprint(boxes[box_number])
                 if r == 0:
                     l, w, h = boxes[box_number][0:3]
                 elif r == 1:
