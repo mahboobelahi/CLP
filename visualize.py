@@ -64,7 +64,7 @@ def draw(pieces, color_index=[], title=""):
             colors.append(clr[index])
     plt.interactive(True)
     fig = plt.figure()
-    fig = fig = plt.figure(figsize=(20, 300))
+    fig = fig = plt.figure(figsize=(20, 30))
     # xticks = np.arange(0, 600, 50)
     # yticks = np.arange(0, 250, 20)
     # zticks = np.arange(0, 250, 20)
@@ -78,6 +78,8 @@ def draw(pieces, color_index=[], title=""):
     # ax.set_xticks(xticks)
     # ax.set_yticks(yticks)
     # ax.set_zticks(zticks)
+    SV = [box + [box[3] * box[4] * box[5]] for box in sizes]
+    SV = sorted(SV, key=lambda x: x[4], reverse=True)
     for p, s, c in zip(positions, sizes, colors):
         plotcuboid(pos=p, size=s, ax=ax, color=c)
     plt.title(title)
