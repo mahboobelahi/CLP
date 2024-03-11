@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+label = 0
 pallete = ['darkgreen', 'tomato', 'yellow', 'darkblue', 'darkviolet', 'indianred', 'yellowgreen', 'mediumblue', 'cyan',
            'black', 'indigo', 'pink', 'lime', 'sienna', 'plum', 'deepskyblue', 'forestgreen', 'fuchsia', 'brown',
            'turquoise', 'aliceblue', 'blueviolet', 'rosybrown', 'powderblue', 'lightblue', 'skyblue', 'lightskyblue',
@@ -37,18 +37,29 @@ def cuboid_data(o, size=(1, 1, 1)):
     return np.array(x), np.array(y), np.array(z)
 
 
-def plotcuboid(pos=(0, 0, 0), size=(1, 1, 1), ax=None, **kwargs):
+def plotcuboid(pos=(0, 0, 0), size=(1, 1, 1), ax=None, lab=label,**kwargs):
     # Plotting a cube element at position pos
     if ax is not None:
+        x,y,z =pos
+        length ,width, height =size
         X, Y, Z = cuboid_data(pos, size)
-        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+        
+        ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                         edgecolor='black', alpha=0.3,linewidth=1.2, edgecolors='r', **kwargs)
 
+        for dx, dy, dz in [(length/2 ,width/2 , height),
+                           (length ,width/2 , height/2),(0 ,width/2 , height/2),
+                            (length/2 ,0 , height/2),(length/2 ,width , height/2),
+                            (length/2 ,width/2 , height*(-.5))]:
+            ax.text(x + dx, y + dy, z + dz, str(label),alpha=0, color='black', fontsize=15, ha='center', va='center')
 
-def draw(pieces, color_index=[], title=""):
+def draw( x_ticks, y_ticks, z_ticks, step_size,pieces, color_index=[], title=""):
+    global label
     positions = []
     sizes = []
     colors = []
     sorted_size = []
+    decrement =30
     for each in pieces:
         positions.append(each[0:3])
         sizes.append(each[3:])
@@ -63,27 +74,66 @@ def draw(pieces, color_index=[], title=""):
             index = dim.index(each)
             colors.append(clr[index])
     plt.interactive(True)
-    fig = plt.figure()
-    fig = fig = plt.figure(figsize=(20, 30))
-    # xticks = np.arange(0, 600, 50)
-    # yticks = np.arange(0, 250, 20)
-    # zticks = np.arange(0, 250, 20)
+    fig = plt.figure(figsize=(15,20))
+
     ax = fig.add_subplot(projection='3d')
-    # ax.set_xlabel('X')
-    # ax.set_ylabel('Y')
-    # ax.set_zlabel('Z')
-    # ax.set_xlim(0, 600)
-    # ax.set_ylim(0, 250)
-    # ax.set_zlim(0, 250)
-    # ax.set_xticks(xticks)
-    # ax.set_yticks(yticks)
-    # ax.set_zticks(zticks)
-    SV = [box + [box[3] * box[4] * box[5]] for box in sizes]
-    SV = sorted(SV, key=lambda x: x[4], reverse=True)
+    ax.set_xticks(np.arange(0, x_ticks + step_size-decriment, step_size-decriment))
+    ax.set_yticks(np.arange(0, y_ticks + step_size-40, step_size-40))
+    ax.set_zticks(np.arange(0, z_ticks + step_size-40, step_size-40))
+    
     for p, s, c in zip(positions, sizes, colors):
-        plotcuboid(pos=p, size=s, ax=ax, color=c)
+        label = label+1
+        plotcuboid(pos=p, size=s, ax=ax, color=c,lab=label)
+    label =0
     plt.title(title)
 
     plt.show()
 
     return color_index
+
+from mpl_toolkits.mplot3d import Axes3D
+decriment=30
+def plot_3d_rectangle(rectangles, x_ticks, y_ticks, z_ticks, step_size,index):
+    plt.interactive(True)
+    fig = fig = plt.figure(figsize=(15,15))
+    ax = fig.add_subplot(111, projection='3d')
+    s=['SS',"TS","BS","FS"]
+    label =1
+    for rect in rectangles:
+        x, y, z, length, width, height,i,partno = rect
+        # if i== 0:
+        #     #ax.bar3d(x, y, z, length, width, height, color='none', edgecolor='black', lw=4)
+        #     ax.bar3d(x, y, z, length, width, height,color='none',alpha=0.1, edgecolor=(0, 0, 0, 1), lw=5)
+
+        # else:
+        ax.bar3d(x, y, z, length, width, height,color=pallete[i],alpha=.2, edgecolor=(0, 0, 0, 1), lw=3)
+                # Generate and plot vertices
+        # vertices = [
+        #     (x + length, y, z),  # (xi+li, yi, zi)
+        #     (x, y + width, z),  # (xi, yi+wi, zi)
+        #     (x, y, z + height)   # (xi, yi, zi+hi)
+        # ]
+        # for vertex in vertices:
+        #     ax.scatter(*vertex, color='black', s=50)
+ # Add label to the top face
+        for dx, dy, dz in [#(length/2 ,width/2 , height),#top face
+                            (length/2 ,width/2 , height/2)
+                            #(0 ,width/2 , height/2),
+                            #(length/2 ,0 , height/2),#right to top face
+                            #(length/2 ,width , height/2),#left to top face
+                            #(length/2 ,width/2 , height*(-.5))
+                                ]:
+                ax.text(x + dx, y + dy, z + dz, partno, color='black', fontsize=15, ha='center', va='center')
+
+        label =label+1
+    ax.set_xlabel('X-axis')
+    ax.set_ylabel('Y-axis')
+    ax.set_zlabel('Z-axis')
+    ax.set_title('3D Rectangles')
+
+    ax.set_xticks(np.arange(0, x_ticks + step_size-decriment, step_size-decriment))
+    ax.set_yticks(np.arange(0, y_ticks + step_size-40, step_size-40))
+    ax.set_zticks(np.arange(0, z_ticks + step_size-40, step_size-40))
+    #plt.savefig(f"Figure{label}.png", format="png", dpi=1200)
+    plt.show()
+

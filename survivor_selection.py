@@ -2,9 +2,9 @@ import fitnesscalc as ft
 import nsga2 as ns
 
 
-def select(population, offsprings, truck, boxes, total_value, count):
+def select(population, offsprings, CONT, boxes, total_value, count):
     survivors = {}
-    offspring, fitness = ft.evaluate(offsprings, truck, boxes, total_value)
+    offspring, fitness = ft.evaluate(offsprings, CONT, boxes, total_value)
     offspring = ns.rank(offspring, fitness)
     pool = list(population.values()) + list(offspring.values())
     i = 1

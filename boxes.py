@@ -2,14 +2,19 @@ import random
 
 
 def generateboxes(container, num):
-    retry = 500 * num
+    
+    retry = 600 * num
     while num > 1:
         cuboid = random.choice(container)
-        while cuboid[3] <= 11 or cuboid[4] <= 11 or cuboid[5] <= 11:
+        #cuboid = container[0]
+        
+        
+        while cuboid[3] <= 39 or cuboid[4] <= 29 or cuboid[5] <= 19:
             retry -= 1
             if retry == 0:
                 print("Cannot partition into packages. Please try again")
                 return
+            #container.remove(cuboid)
             cuboid = random.choice(container)
         container.remove(cuboid)
         prob = random.uniform(0, 1)
@@ -36,8 +41,11 @@ def generateboxes(container, num):
             package1 = [x1, y1, z1 + t, x2, y2, z2 - t]
             package2 = [x1, y1, z1, x2, y2, t]
 
+        # package1.append((package1[3]*package1[4]*package1[5]))
+        # package2.append((package2[3]*package2[4]*package2[5]))
         container.append(package1)
         container.append(package2)
+        #container = sorted(container,  key=lambda x: x[-1],reverse=True)
         num -= 1
 
     return container
