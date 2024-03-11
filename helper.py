@@ -188,11 +188,11 @@ def get_top_boxes(boxes):
     top_boxes = []
 
     for b in boxes:
-        print(f"Checking box {b[0].get_id()} with top boxes {b[0].top}")
+        # print(f"Checking box {b[0].get_id()} with top boxes {b[0].top}")
 
         top_boxes.append(b[0])
         top_boxes.extend(get_top_boxes(b[0].top))
-    print(f"Returning top boxes {top_boxes}")
+    # print(f"Returning top boxes {top_boxes}")
     return top_boxes
 
 
