@@ -16,16 +16,9 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
     :param boxes: A dictionary of the box number as the key and a list of [l, w, h, vol, value] of the boxes as values
     :return: The population dictionary adn list of fitness values for every individual
     """
-    container_vol = CONT.get_volume()
-    # PP = copy.deepcopy(CONT.PP)
     L, W, H = CONT.get_dimention()
-    
     ft = {}
-    x_ticks = 600
-    y_ticks = 250
-    z_ticks = 250
-    step_size = 50
-    
+
     for key, individual in population.items():
 
         print(f"processing key.....{key}")
@@ -33,26 +26,26 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
         number_boxes = 0
         value = 0
         result = []
-        PP = copy.deepcopy(CONT.PP) #copying placement points a list [[0,0,0]]
+        # copying placement points a list [[0,0,0]]
+        PP = copy.deepcopy(CONT.PP)
         # * boxes =  copy.deepcopy(boxes_objs)
-        items = [(copy.deepcopy(boxes_objs)[box_number], r) for box_number, r in zip(
-            individual['order'], individual['rotate'])]
-        boxes=sorted(items,key=lambda item: (item[0].get_volume(),item[0].get_dimention()[0]),reverse=True)#,item[2],item[1]
-        boxes = sorted(boxes, key=lambda item: (
-            item[0].get_id().split("C-")[1]), reverse=False)
+        items = [(copy.deepcopy(boxes_objs)[box_number], r)
+                 for box_number, r in zip(individual['order'], individual['rotate'])]
+        boxes = sorted(items, key=lambda item: (item[0].get_volume(), item[0].get_dimention()[0]), reverse=True)  # ,item[2],item[1]
+        boxes = sorted(boxes, key=lambda item: (item[0].get_id().split("C-")[1]), reverse=False)
         # for  v,r in boxes:
         #         pprint((v.get_volume(), v.get_dimention()))
         for box, r in boxes[:]:
             box.rotation_type = r
             l, w, h = box.get_dimention()
-            
+
             for pos in PP[:]:
                 is_overlap = []
                 support_area = []
                 is_hanging = []
                 temp = {}
                 temp_pp = []
-                if pos == [0, 0, 0]: #first box in container
+                if pos == [0, 0, 0]:  # first box in container
                     box.set_onBase(True)
                     box.set_position(pos)
                     box.is_fit = True
@@ -73,137 +66,122 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
                     # best_point.extend([pos])
                     PP.extend(temp_pp)
                     box.set_pps(temp_pp)
-                    PP = sorted(PP, key=lambda point: (
-                        point[0], point[2], point[1]), reverse=False)
+                    PP = sorted(PP, key=lambda point: (point[0], point[2], point[1]), reverse=False)
                     break
 
                 if (L < pos[0]+l or W < pos[1]+w or H < pos[2]+h):
                     continue
-                for current_item in CONT.fit_items: #iterate over items placed in container
-                     
-                    # if box.get_id() == 'Box-67C-3':# and pos ==[496,81,55]:#current_item.allVertices["BBL"]==[0, 192, 173]:
-                    #     pass
-                    #here i am checking the overlap among boxes in x,y,z
-                    #box1,2:[x,y,z,l,w,h]
+                for current_item in CONT.fit_items:  # iterate over items placed in container
+
                     box1 = current_item.get_position()+current_item.get_dimention()
                     box2 = pos+box.get_dimention()
-                    #for utility function check helper.py
-                    current_item.set_allvertices(
-                        current_item.get_position()+current_item.get_dimention())
+                    current_item.set_allvertices(current_item.get_position()+current_item.get_dimention())
                     box.set_allvertices(pos+box.get_dimention())
                     box1_vertices = current_item.get_allVertices()
                     box2_vertices = box.get_allVertices()
                     check_overlap = intersect(box1, box2)
                     is_overlap.append(check_overlap)
-                    #here i am making box neighbours 
+                    # here i am making box neighbours
                     if (box1_vertices["FTL"] == box2_vertices["FBL"]) and check_overlap == False:
                         if box1 not in box.under:
-                            box.under.append(
-                                [current_item, calculate_overlap_area(box1, box2)])
-                            current_item.top.append(
-                                [box, calculate_overlap_area(box1, box2)])
+                            box.under.append([current_item, calculate_overlap_area(box1, box2)])
+                            current_item.top.append([box, calculate_overlap_area(box1, box2)])
 
                     if (box1_vertices["BBL"] == box2_vertices["FBL"]) and check_overlap == False:
                         current_item.besideR.append(box)
                         box.besideL.append(current_item)
 
-                    # (box1[2]+box1[5]) == box2[2]:
                     if (box1_vertices["FBR"] == box2_vertices["FBL"]) and check_overlap == False:
                         current_item.front.append(box)
                         box.back.append(current_item)
 
                 if True in is_overlap:
-                    #it means at this pos there is an overlap among  boxes so we try next position
-                    #but first we remove neighbours
                     clear_neighbors(current_item, box)
                     continue
-                #At this point we got a valid pos so we need check  
-                #its neighbours to make sure new box is getting enough support from botom boxes
+
                 obj = None
                 area = 0
-                #*case1
-                if box.under and pos[2] !=0:
-                    obj,area1 = box.get_under()[0]
+                # *case1
+                if box.under and pos[2] != 0:
+                    obj, _ = box.get_under()[0]
                     area += calculate_overlap_area(obj.get_position()+obj.get_dimention(),
-                                        pos+box.get_dimention())
-                    if area < support_ratio: 
-                        clear_neighbors(current_item,box)
-                        #remove_pp(area,CONT,removed_PP,pos)
-                        continue    
+                                                   pos+box.get_dimention())
+                    if area < support_ratio:
+                        clear_neighbors(current_item, box)
+                        continue
                     else:
                         if obj.besideR:
-                            area3 = 0
                             if obj.besideR[0].top:
-                                top_boxes = get_top_boxes(obj.besideR[0].top)   
-                                if (box.get_dimention()[2]/top_boxes[-1].get_dimention()[2]) > support_ratio:#pos[2] == b.get_dimention()[2] + b.get_position()[2]:
+                                top_boxes = get_top_boxes(obj.besideR[0].top)
+                                if (box.get_dimention()[2]/top_boxes[-1].get_dimention()[2]) > support_ratio:
                                     area3 = calculate_overlap_area(top_boxes[-1].get_position() + top_boxes[-1].get_dimention(),
-                                                                    pos + box.get_dimention())
+                                                                   pos + box.get_dimention())
                                     box.under.append([top_boxes[-1], area3])
                                     top_boxes[-1].top.append([box, area3])
                             else:
                                 area3 = calculate_overlap_area(obj.besideR[0].get_position()+obj.get_dimention(),
-                                        pos+box.get_dimention())
+                                                               pos+box.get_dimention())
                                 if area3 > 0:
-                                    box.under.append([obj.besideR[0],area3])
-                                    obj.besideR[0].top.append([box,area3])
-                #*case2
-                elif box.back and pos[2] !=0:  
-                    if  box.back[0].get_under():
-                        obj,_ = box.back[0].get_under()[0]
+                                    box.under.append([obj.besideR[0], area3])
+                                    obj.besideR[0].top.append([box, area3])
+                # *case2
+                elif box.back and pos[2] != 0:
+                    if box.back[0].get_under():
+                        obj, _ = box.back[0].get_under()[0]
                         area += calculate_overlap_area(obj.get_position()+obj.get_dimention(),
-                                                    pos+box.get_dimention())
+                                                       pos+box.get_dimention())
                         if area < support_ratio:
-                            #remove_pp(area,CONT,removed_PP,pos) 
-                            clear_neighbors(current_item,box)
+                            # remove_pp(area,CONT,removed_PP,pos)
+                            clear_neighbors(current_item, box)
                             continue
                         else:
                             area3 = 0
-                            box.under.append([obj,area])
-                            obj.top.append([box,area])
+                            box.under.append([obj, area])
+                            obj.top.append([box, area])
                             if obj.besideR:
                                 area3 += calculate_overlap_area(obj.besideR[0].get_position()+obj.besideR[0].get_dimention(),
-                                                                            pos+box.get_dimention())                      
-                                if area > 0:
-                                    box.under.append([obj.besideR[0],area3])
-                                    obj.besideR[0].top.append([box,area3]) 
-                #*case3:
-                elif box.besideL and pos[2] !=0:
+                                                                pos+box.get_dimention())
+                                if area3 > 0:
+                                    box.under.append([obj.besideR[0], area3])
+                                    obj.besideR[0].top.append([box, area3])
+                # *case3:
+                elif box.besideL and pos[2] != 0:
                     if box.besideL[0].get_under():
                         area1 = 0
                         under_boxes = box.besideL[0].get_under()
-                
+                        # if len(under_boxes) >= 3:
                         for b in under_boxes:
                             area1 = calculate_overlap_area(b[0].get_position() + b[0].get_dimention(),
-                                                            pos + box.get_dimention())
+                                                           pos + box.get_dimention())
                             if area1 > 0:
                                 obj, _ = b
                                 break
-                            
+
                         area2 = 0
-                        if area1 < .5 and obj!=None:
+                        if area1 < .5 and obj != None:
                             if obj.besideR:
                                 area2 += calculate_overlap_area(obj.besideR[0].get_position()+obj.besideR[0].get_dimention(),
-                                                            pos+box.get_dimention())
+                                                                pos+box.get_dimention())
 
-                        area =area1+area2
-                
-                        if area1!=0 and area1 > 0.7:
+                        area = area1+area2
+
+                        if area1 != 0 and area1 > 0.7:
                             area3 = 0
-                            box.under.append([obj,area1])
-                            obj.top.append([box,area1])
+                            box.under.append([obj, area1])
+                            obj.top.append([box, area1])
                             if obj.besideR and calculate_overlap_area(obj.besideR[0].get_position()+obj.besideR[0].get_dimention(),
-                                                            pos+box.get_dimention()>0):
+                                                                      pos+box.get_dimention()) > 0:
                                 area3 = calculate_overlap_area(obj.besideR[0].get_position()+obj.besideR[0].get_dimention(),
-                                                            pos+box.get_dimention())
-                                box.under.append([obj.besideR[0],area3])
-                                obj.besideR[0].top.append([box,area3])
-                        if area2 !=0 and area2 > 0.7:
-                            box.under.append([obj.besideR[0],area2])
-                            obj.besideR[0].top.append([box,area2])
+                                                               pos+box.get_dimention())
+                                box.under.append([obj.besideR[0], area3])
+                                obj.besideR[0].top.append([box, area3])
+                        if area2 != 0 and area2 > 0.7:
+                            box.under.append([obj.besideR[0], area2])
+                            obj.besideR[0].top.append([box, area2])
 
-                if (area) < support_ratio:
-                    clear_neighbors(current_item,box)
-                    continue            
+                    if area < support_ratio:
+                        clear_neighbors(current_item, box)
+                        continue
                 else:
                     pass
 
@@ -217,7 +195,7 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
 
                 if CONT.get_total_occupide_volume() + box.get_volume() > CONT.get_volume():
                     CONT.unfitted_items.append(box)
-                    fit = False                    
+                    fit = False
                 if fit:
                     if pos[2] == 0:
                         box.set_onBase(True)
@@ -251,5 +229,5 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
         population[key]['un_fit_items'] = copy.deepcopy(CONT.unfitted_items)
         CONT.fit_items.clear()
         CONT.unfitted_items.clear()
-        #print("...............")
+        # print("...............")
     return population, ft
