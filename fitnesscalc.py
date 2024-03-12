@@ -31,8 +31,10 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
         # * boxes =  copy.deepcopy(boxes_objs)
         items = [(copy.deepcopy(boxes_objs)[box_number], r)
                  for box_number, r in zip(individual['order'], individual['rotate'])]
-        boxes = sorted(items, key=lambda item: (item[0].get_volume(), item[0].get_dimention()[0]), reverse=True)  # ,item[2],item[1]
-        boxes = sorted(boxes, key=lambda item: (item[0].get_id().split("C-")[1]), reverse=False)
+        
+        boxes = sorted(items, key=lambda item: (-item[0].get_volume(), item[1]))
+        # boxes = sorted(items, key=lambda item: (item[0].get_volume(), item[0].get_dimention()[0]), reverse=True)  # ,item[2],item[1]
+        # boxes = sorted(boxes, key=lambda item: (item[0].get_id().split("C-")[1]), reverse=False)
         # for  v,r in boxes:
         #         pprint((v.get_volume(), v.get_dimention()))
         for box, r in boxes[:]:
@@ -215,9 +217,9 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
                     box.set_pps(temp_pp)
                     PP = sorted(PP, key=lambda point: (
                         point[0], point[2], point[1]), reverse=False)
-                if box.is_fit == False:
-                    CONT.unfitted_items.append(box)
                 break
+            if box.is_fit == False:
+                    CONT.unfitted_items.append(box)
         # print(len(CONT.fit_items), len(CONT.items))
         # print(CONT.get_total_occupide_volume(),CONT.get_volume())
         fitness = [round((CONT.get_total_occupide_volume() / CONT.get_volume() * 100), 2),
