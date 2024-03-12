@@ -120,6 +120,9 @@ def get_top_boxes(boxes):
 
 def generate_report(result, value, p_ind, key):
     res = value['result']
+    result["packed_items"] = len(res)
+    result["unpacked_items"]["item_ids"] = [i.get_id() for i in value["un_fit_items"]]
+    result["unpacked_items"]["quantity"] = len(value["un_fit_items"])
     itesm_passport = [
         {
             "id": item.get_id(),
