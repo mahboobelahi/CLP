@@ -26,13 +26,20 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
         number_boxes = 0
         value = 0
         result = []
+        boxes = []
         # copying placement points a list [[0,0,0]]
         PP = copy.deepcopy(CONT.PP)
         # * boxes =  copy.deepcopy(boxes_objs)
         items = [(copy.deepcopy(boxes_objs)[box_number], r)
                  for box_number, r in zip(individual['order'], individual['rotate'])]
-        
-        boxes = sorted(items, key=lambda item: (-item[0].get_volume(), item[1]))
+        for i in range(1,4):    
+            
+            boxes.extend(sorted([tup for tup in items if tup[0].name in {f"C-{i}"}],
+                            key=lambda x: (-x[0].get_volume(), x[1])))
+            for i,r in boxes:
+                pprint(f"{i.get_id()},{i.get_volume()},{i.get_dimention()},{r}")#,x[0].get_dimention()[0]
+
+        #boxes = sorted(items, key=lambda item: (-item[0].get_volume(), item[1]))
         # boxes = sorted(items, key=lambda item: (item[0].get_volume(), item[0].get_dimention()[0]), reverse=True)  # ,item[2],item[1]
         # boxes = sorted(boxes, key=lambda item: (item[0].get_id().split("C-")[1]), reverse=False)
         # for  v,r in boxes:
