@@ -1,6 +1,8 @@
-import json,time
+import json
+import time
 import random
-import visualize_plotly as vis
+from datetime import datetime
+from pprint import pprint
 import visualize as vis2
 import population as geni
 import fitnesscalc as ft
@@ -18,13 +20,13 @@ from helper import *
 
 NUM_OF_ITERATIONS = 1
 NUM_OF_INDIVIDUALS = 36
-NUM_OF_GENERATIONS = 100
+NUM_OF_GENERATIONS = 10
 output_file = 'truck_and_packages'
 PC = int(0.8 * NUM_OF_INDIVIDUALS)
 PM1 = 0.2
 PM2 = 0.02
 K = 2
-ROTATIONS = 6  # 1 or 2 or 6
+ROTATIONS = 6  # 6  # 1 or 2 or 6
 report = {}
 
 # with open('PP_resV2.json', 'w') as json_file:
@@ -49,7 +51,7 @@ def plot_stats(average_fitness, title=""):
     plt.plot(x1, avg_value, label='Average Value of Boxes')
     plt.xlabel('Number of Generations')
     plt.ylabel('Fitness Values')
-    plt.xticks(ticks=[t for t in x1 if t % 20 == 0])
+    plt.xticks(ticks=[t for t in x1 if t % 5 == 0])
     plt.title(title)
     plt.legend()
     plt.show()
@@ -64,7 +66,7 @@ def calc_average_fitness(individuals):
             fitness_sum[0] += value['fitness'][0]
             fitness_sum[1] += value['fitness'][1]
             fitness_sum[2] += value['fitness'][2]
-    average = [round(number / count,2) for number in fitness_sum]
+    average = [round(number / count, 2) for number in fitness_sum]
     return average
 
 
@@ -102,8 +104,7 @@ def draw_pareto(population):
             ax.set_zlabel('value')
             plt.show()
         except:
-            print(
-                "ERROR : Please try increasing the number of individuals as the unique Rank 1 solutions is less than 3")
+            print("ERROR : Please try increasing the number of individuals as the unique Rank 1 solutions is less than 3")
 
 
 if __name__ == "__main__":
@@ -164,24 +165,38 @@ if __name__ == "__main__":
         res = {}
         for i in range(1):
             # Generate the initial population
-            population = geni.generate_pop(box_params, NUM_OF_INDIVIDUALS, ROTATIONS)
+            population = geni.generate_pop(
+                box_params, NUM_OF_INDIVIDUALS, ROTATIONS)
 
             gen = 0
             average_fitness = []
             start = time.time()
+            timing_record = {}
             while gen < NUM_OF_GENERATIONS:
                 print(f"Running current Generations.....{gen}")
-                population, fitness = ft.evaluate(population, CONT, box_params, total_value)
+                timing_record[gen] = {"start_time": time.time(),
+                                      "end_time": None}
+                population, fitness = ft.evaluate(
+                    population, CONT, box_params, total_value)
                 population = ns.rank(population, fitness)
                 offsprings = re.crossover(deepcopy(population), PC, k=K)
                 offsprings = mt.mutate(offsprings, PM1, PM2, ROTATIONS)
-                population = ss.select(population, offsprings, CONT, box_params, total_value,
+                population = ss.select(population, offsprings, CONT,
+                                       box_params, total_value,
                                        NUM_OF_INDIVIDUALS)
                 average_fitness.append(calc_average_fitness(population))
-                #print(f"Running current Generations.....{gen}")
+                # print(f"Running current Generations.....{gen}")
+                timing_record[gen]["end_time"] = time.time()
+                elapsed_time = timing_record[gen]["end_time"] - \
+                    timing_record[gen]["start_time"]
+                timing_record[gen]["elapsed_time"] = round(elapsed_time/60, 2)
                 gen += 1
+                pprint(timing_record)
             end = time.time()
-            print(end - start)
+            print(f"[X-time] {end - start}")
+            # GA computation time
+            with open(f'time.json', 'w') as json_file:
+                json_file.write(json.dumps(timing_record, indent=2))
             results = []
             customers = {}
             counter = 1
@@ -190,9 +205,9 @@ if __name__ == "__main__":
                 "container_weight": 28080,
                 "container_volume": CONT.get_volume(),
                 "total_items": len(CONT.items),
-                "packed_items": len(CONT.fit_items),
-                "unpacked_items": {"qunatity": len(CONT.unfitted_items),
-                                   "item_ids": len([i.get_id() == False for i in CONT.unfitted_items])},
+                # "packed_items": 0,
+                # "unpacked_items": {"quantity": 0,
+                #                    "item_ids": None},  # len([i.get_id() == False for i in CONT.unfitted_items])}
                 "consignment_origin": ["City ABC"],
                 "consignment_destinations": ["ABC", "ABC", "ABC"]
             }}
@@ -200,36 +215,6 @@ if __name__ == "__main__":
             for key, value in population.items():
                 if value['Rank'] == 1:
                     generate_report(result, value, p_ind, key)
-                    # results.append([res.get_plot_data() for res in value['result']])
-                    # problem_set[p_ind] = {
-                    #         f"result{p_ind}_{key}" : {
-                    #         "res":value['result'],
-                    #         "fitness":value["fitness"],
-                    #         "num":len(value['result'])}
-                    #         }
-                    # "fitness": ["Vol_utilization(float)", "packed boxes", "Average_Value"],
-
-                # res[f"{p_ind}{key}"] = {
-                #     "fitness": value["fitness"],
-                #     "num": len(value['result']),
-                #     "res": customers
-                # }
-
-                # customers[f"customer_{counter}"] = [
-                #     customer for customer in value['result'] if customer[-1] in {1}]
-                # customers[f"num_C{counter}"] = len(
-                #     customers[f"customer_{counter}"])
-                # counter += 1
-                # customers[f"customer_{counter}"] = [
-                #     customer for customer in value['result'] if customer[-1] in {2}]
-                # customers[f"num_C{counter}"] = len(
-                #     customers[f"customer_{counter}"])
-                # counter += 1
-                # customers[f"customer_{counter}"] = [
-                #     customer for customer in value['result'] if customer[-1] in {3}]
-                # customers[f"num_C{counter}"] = len(
-                #     customers[f"customer_{counter}"])
-                # counter = 1
 
             # Convert the list to JSON
             json_data = json.dumps(result, indent=2)
@@ -237,35 +222,16 @@ if __name__ == "__main__":
             # Save the JSON data to a file
             with open(f'{output_file}.json', 'w') as json_file:
                 json_file.write(json_data)
-            # Plot using plotly
-            # color_index = vis.draw_solution(pieces=packages)
-            # vis.draw(results, color_index)
 
-            # Plot using matplotlib
-            # x_ticks = 600
-            # y_ticks = 250
-            # z_ticks = 250
-            # step_size = 50
-            # # color_index = vis2.draw(x_ticks, y_ticks, z_ticks, step_size,pieces=packages, title="True Solution Packing")
-            # j = 0
-            # for each in results:
-            #     vis2.plot_3d_rectangle(
-            #         each, x_ticks, y_ticks, z_ticks, step_size, j+1)
-            #     j += 1
-            #     # break
-            # # for each in results:
-            # #     vis2.draw( x_ticks, y_ticks, z_ticks, step_size,each, color_index,title="Rank 1 Solution Packing For Iteration {}".format(i))
-            # draw_pareto(population)
             average_vol.append(average_fitness[-1][0])
             average_num.append(average_fitness[-1][1])
             average_value.append(average_fitness[-1][2])
             plot_stats(average_fitness,
-                       title="Average Fitness Values for Run {} over {} generations".format(i + 1,
-                                                                                            NUM_OF_GENERATIONS))
-
+                       title="Average Fitness Values for Run {} over {} generations".format(i + 1, NUM_OF_GENERATIONS))
+            print("END!!!!!!!!!!!!!!!!")
+        print("!!!!!!!!!!!!!!!!")
         print(tabulate(
             [['Problem Set', p_ind], ['Runs', NUM_OF_ITERATIONS], ['Avg. Volume%', sum(average_vol) / len(average_vol)],
              ['Avg. Number%', sum(average_num) / len(average_num)],
              ['Avg. Value%', sum(average_value) / len(average_value)]],
             headers=['Parameter', 'Value'], tablefmt="github"))
-    #input("Press Enter to continue...")

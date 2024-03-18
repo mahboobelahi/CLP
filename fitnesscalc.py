@@ -22,24 +22,27 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
     for key, individual in population.items():
 
         print(f"processing key.....{key}")
-        occupied_vol = 0
-        number_boxes = 0
-        value = 0
-        result = []
+        # occupied_vol = 0
+        # number_boxes = 0
+        # value = 0
+        # result = []
+        counter = 0
         boxes = []
         # copying placement points a list [[0,0,0]]
         PP = copy.deepcopy(CONT.PP)
         # * boxes =  copy.deepcopy(boxes_objs)
         items = [(copy.deepcopy(boxes_objs)[box_number], r)
                  for box_number, r in zip(individual['order'], individual['rotate'])]
+        
         for i in range(1,4):    
             
             boxes.extend(sorted([tup for tup in items if tup[0].name in {f"C-{i}"}],
-                            key=lambda x: (-x[0].get_volume(), x[1])))
-            for i,r in boxes:
-                pprint(f"{i.get_id()},{i.get_volume()},{i.get_dimention()},{r}")#,x[0].get_dimention()[0]
+                            key=lambda x: (-x[0].get_volume(), -x[1])))
+        # for i,r in boxes:
+        #     counter+=1
+        #     pprint(f"{counter}-{i.get_id()},{i.get_volume()},{i.get_dimention()},{r}")#,x[0].get_dimention()[0]
 
-        #boxes = sorted(items, key=lambda item: (-item[0].get_volume(), item[1]))
+        # boxes = sorted(items, key=lambda item: (-item[0].get_volume(), item[1]))
         # boxes = sorted(items, key=lambda item: (item[0].get_volume(), item[0].get_dimention()[0]), reverse=True)  # ,item[2],item[1]
         # boxes = sorted(boxes, key=lambda item: (item[0].get_id().split("C-")[1]), reverse=False)
         # for  v,r in boxes:
@@ -229,6 +232,7 @@ def evaluate(population, CONT, boxes_objs, total_value, support_ratio=0.70):
                     CONT.unfitted_items.append(box)
         # print(len(CONT.fit_items), len(CONT.items))
         # print(CONT.get_total_occupide_volume(),CONT.get_volume())
+        
         fitness = [round((CONT.get_total_occupide_volume() / CONT.get_volume() * 100), 2),
                    round((len(CONT.fit_items) / len(CONT.items) * 100), 2),
                    round((CONT.get_total_fitted_item_value() / total_value * 100), 2)]

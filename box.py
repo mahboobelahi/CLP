@@ -47,9 +47,9 @@ class Item:
         elif self.rotation_type == RotationType.RT_HWL:
             dimension = [self.height, self.width, self.length]
         elif self.rotation_type == RotationType.RT_HLW:
-            dimension = [self.height, self.length, self.width]
-        else:
             dimension = [self.length, self.width, self.height]
+        else:
+            dimension = [self.height, self.length, self.width]
 
         return dimension
 

@@ -1,3 +1,5 @@
+import copy
+
 
 def rectIntersect(box1, box2, x, y):
     position, d1 = (box1[0:3], box1[3:6])
@@ -120,9 +122,15 @@ def get_top_boxes(boxes):
 
 def generate_report(result, value, p_ind, key):
     res = value['result']
-    result["packed_items"] = len(res)
-    result["unpacked_items"]["item_ids"] = [i.get_id() for i in value["un_fit_items"]]
-    result["unpacked_items"]["quantity"] = len(value["un_fit_items"])
+    # a = value["un_fit_items"]
+    # b = {"quantity": len(value["un_fit_items"]),
+    #      "item_ids": [i.get_id() for i in value["un_fit_items"]]}
+    # result["cargo_metadata"]["packed_items"] = len(res)
+    # result["cargo_metadata"]["unpacked_items"]["quantity"] = len(
+    #     value["un_fit_items"])
+    # result["cargo_metadata"]["unpacked_items"]["item_ids"] = [i.get_id()
+    #                                                           for i in value["un_fit_items"]]
+
     itesm_passport = [
         {
             "id": item.get_id(),
@@ -144,9 +152,14 @@ def generate_report(result, value, p_ind, key):
                 "front": [neighbor.get_id() for neighbor in item.front if neighbor],
             }
         } for item in res]
-    result[f"{p_ind}{key}"] = {"item_passport": itesm_passport,
+    result[f"{p_ind}{key}"] = {
                                "solution_fitness": value["fitness"],
-                               "num": len(value['result'])}
+                               "packed_items": len(res),
+                               "unpacked_items": {
+                                   "quantity": len(value["un_fit_items"]),
+                                   "item_ids": [i.get_id() for i in value["un_fit_items"]]
+                               }, "num": len(value['result']),
+                               "item_passport": itesm_passport,}
     return result
 
 
